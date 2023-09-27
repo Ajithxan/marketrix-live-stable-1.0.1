@@ -200,11 +200,15 @@ fetch('https://api.ipify.org/?format=json')
     });
 
 const initiateSnippet = () => {
-    const parentDiv = document.createElement("div");
-    const contactFormDiv = document.createElement("div");
+    parentDiv = document.createElement("div");
+    contactFormDiv = document.createElement("div");
 
     parentDiv.setAttribute("id", "mtx-parent-div");
     contactFormDiv.setAttribute("id", "mtx-contact-form-div");
+
+    // hide these elements until everything is loaded
+    parentDiv.style.display = "none"
+    contactFormDiv.style.display = "none"
 
     document.body.prepend(contactFormDiv);
     document.body.prepend(parentDiv);
@@ -247,6 +251,13 @@ const initiateSnippet = () => {
             initiateSocketConnection() // initialize socket connection
             checkMeetingVariables() // this method would be called when redirection or reloading
             getQuery() // admin get request
+
+            // show these element after everything is loaded properly
+            setTimeout(() => {
+                parentDiv.style.display = "block"
+                contactFormDiv.style.display = "block"
+            
+            }, 2000)
         });
 };
 
