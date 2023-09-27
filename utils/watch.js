@@ -1,7 +1,6 @@
 console.log("watch.js is established #9")
 const watch = (callBack, variable) => {
     let old;
-
     setInterval(() => {
         if (Array.isArray(variable)) {
             const obj = {}

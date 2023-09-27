@@ -97,13 +97,13 @@ const SOCKET = {
                 adminMessage = data.message
                 adminName = data.userName
                 adminConnects = true
-                console.log("meetingId", meetingVariables.id)
                 // if (meetingVariables.id) return; // already joined the meeting
                 meetingVariables.id = data.meetingId;
                 meetingVariables.token = data.token;
                 meetingVariables.name = data.liveMeet.name;
                 meetingVariables.domain = data.liveMeet?.website_domain;
                 meetingVariables.visitorSocketId = data.liveMeet?.visitor_socket_id;
+                console.log("meetingId", meetingVariables.id)
                 visitorJoin();
             });
         },

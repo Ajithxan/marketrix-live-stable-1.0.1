@@ -105,7 +105,7 @@ const mouse = {
     },
     loading: {
         show: (message = "Connecting...") => {
-            mouse.startMove()
+            // mouse.startMove()
             // videoContainer.classList.add("mtx-hidden")
             // cursorLoading.classList.remove("mtx-hidden")
 
@@ -116,8 +116,7 @@ const mouse = {
         hide: () => {
             // videoContainer.classList.remove("mtx-hidden")
             // cursorLoading.classList.add("mtx-hidden")
-            console.log("loading hide", firstTimeAdminRequest)
-            if ((/true/).test(firstTimeAdminRequest)) return
+            
             if (getFromStore("LOADING_MESSAGE")) removeFromStore("LOADING_MESSAGE")
             mtxOverlayLoading.classList.add("mtx-hidden")
         }

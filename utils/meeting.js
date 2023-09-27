@@ -91,7 +91,7 @@ const meetingObj = {
             // Remote participants Event
             // participant joined
             meetingObj.meeting.on("participant-joined", (participant) => {
-                mouse.loading.hide();
+                if ((/false/).test(firstTimeAdminRequest)) mouse.loading.hide();
                 firstTimeAdminRequest = false
                 let videoElement = meetingObj.createVideoElement(
                     participant.id,

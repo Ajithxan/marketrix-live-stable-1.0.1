@@ -390,7 +390,6 @@
     /* width: ; */
 }
 .mtx-moving-video-disabled-img {
-    ;
     /* width: 50px !important; */
 }
 .mtx-local-moving-outer-frame {
@@ -410,7 +409,7 @@
     transform: rotate(-23deg)
 }
 .mtx-moving-video-disabled-div {
-    padding: 35px 0px 0px 30px;
+    padding: 35px 0 0 30px;
     margin-top: 12px;
 }
 .mtx-video-disabled-img {
@@ -532,7 +531,7 @@
 #mtx-video-container {
     /* margin-bottom: 20vh; */
     /* background-color: #8a2be2; */
-    height: 80vh;
+    height: 80vh !important;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -14,6 +14,16 @@ const setCDNLink = () => {
     }
 }
 
+const initiateWatchMethod = () => {
+    console.log("watch methods are called")
+
+    // watch path changes
+    watch(() => {
+        currentUrl = window.location.href
+        checkUrlChanges()
+    }, 'window.location.href')
+}
+
 const initiateSocketConnection = () => {
     socketStarted = true
     if (cursorId) {
@@ -111,8 +121,7 @@ const getQuery = () => {
             adminJoin()
         }
     }
-};
-
+}
 
 const checkUrlChanges = () => {
     isUrlChanged = false
@@ -231,6 +240,7 @@ const initiateSnippet = () => {
             currentUrl = window.location.href // set current Url
             setCDNLink()
             generateCursorId() // generate cursor id
+            initiateWatchMethod() // iniate watch methods
             checkUrlChanges() // this method would be called when redirecting or reloading
             setToStore('CURRENT_URL', currentUrl) // set current url in the store
             setUserRole() // set user role
