@@ -22,8 +22,14 @@ const initiateWatchMethod = () => {
         console.log("location is changing...", window.location.href)
         currentUrl = window.location.href
         setToStore("LOADING_MESSAGE", "Redirecting...")
-        mouse.loading.show()
-        SOCKET.emit.urlChange()
+        if (getFromStore('CURRENT_URL')) {
+            if (currentUrl !== getFromStore('CURRENT_URL')) {
+                // emit url changes
+                mouse.loading.show()
+                SOCKET.emit.urlChange()
+            }
+        }
+        setToStore("CURRENT_URL", currentUrl)
     }, 'window.location.href')
 }
 
@@ -178,6 +184,8 @@ const checkMeetingVariables = () => {
         meetingVariables.participant = meetingStoredVariables.participant
         meetingVariables.token = meetingStoredVariables.token
         meetingVariables.userRole = meetingStoredVariables.userRole
+        meetingVariables.adminToken = meetingStoredVariables.adminToken
+        meetingVariables.inquiryId = meetingStoredVariables.inquiryId
 
         if (isUrlChanged) {
             setToStore("LOADING_MESSAGE", "Redirecting...")
@@ -307,6 +315,7 @@ const showModal = () => {
 
 const connectAdminToLive = (meetInfo) => {
     SOCKET.emit.userJoinLive(meetInfo) // admin join live
+    SOCKET.on.meetingEnded()
     SOCKET.on.connectedUser()
     SOCKET.on.changeScroll()
     SOCKET.on.changeUrl()

@@ -297,8 +297,8 @@ const meetingObj = {
     },
 
     leaveMeeting: () => {
+        SOCKET.emit.endMeeting();
         if (meetingVariables.userRole === "admin") {
-            SOCKET.emit.endMeeting();
             meetingObj.endMeetingApiCall();
         }
         // sessionStorage.clear()
@@ -306,7 +306,9 @@ const meetingObj = {
         meetingVariables.id = false
         setToStore("MEETING_ENDED", meetingEnded);
         meetingObj.meeting?.end();
-        if (meetingVariables.userRole === "visitor") window.location.reload();
+        if (meetingVariables.userRole === "visitor") setTimeout(() => {
+            window.location.reload()
+        }, 1000);
     },
 
     toggle: {
