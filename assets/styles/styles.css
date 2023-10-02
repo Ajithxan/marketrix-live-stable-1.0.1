@@ -387,6 +387,9 @@
     left: -84px;
     top: 0;
     max-width: fit-content !important;
+    transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg); /* Safari and Chrome */
+  -moz-transform: rotateY(180deg); /* Firefox */
     /* width: ; */
 }
 .mtx-moving-video-disabled-img {
@@ -481,7 +484,7 @@
 }
 
 #mtx-configuration {
-    z-index: 6;
+    z-index: 1000;
 }
 
 .mouse {
@@ -492,6 +495,9 @@
 }
 .mtx-video-frame {
     width: 100%;
+    transform: rotateY(180deg);
+    -webkit-transform: rotateY(180deg); /* Safari and Chrome */
+    -moz-transform: rotateY(180deg); /* Firefox */
 }
 
 .mtx-admin-video-frame {
@@ -531,7 +537,7 @@
 #mtx-video-container {
     /* margin-bottom: 20vh; */
     /* background-color: #8a2be2; */
-    height: 80vh !important;
+    height: 80vh;
     display: flex;
     justify-content: center;
     align-items: center;

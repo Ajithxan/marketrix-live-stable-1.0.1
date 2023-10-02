@@ -19,8 +19,11 @@ const initiateWatchMethod = () => {
 
     // watch path changes
     watch(() => {
+        console.log("location is changing...", window.location.href)
         currentUrl = window.location.href
-        checkUrlChanges()
+        setToStore("LOADING_MESSAGE", "Redirecting...")
+        mouse.loading.show()
+        SOCKET.emit.urlChange()
     }, 'window.location.href')
 }
 
@@ -46,7 +49,7 @@ const initiateSocketConnection = () => {
                 windowWidth: window?.innerWidth,
                 windowHeight: window?.innerHeight,
                 windowResolution: window?.innerWidth + "x" + window?.innerHeight,
-                ipAddress: ipAddress,
+                ipAddress: "",
                 country: "United States",
             };
             let visitor = { visitedTime, currentUrl, visitorDevice };
@@ -256,7 +259,7 @@ const initiateSnippet = () => {
             setTimeout(() => {
                 parentDiv.style.display = "block"
                 contactFormDiv.style.display = "block"
-            
+
             }, 2000)
         });
 };
@@ -401,7 +404,7 @@ const submit = async () => {
         locationHref: window.location.href,
         ipAddress,
         geoLocation,
-        country: 'United States'
+        country: 'United States',
     };
 
     if (!validate("mtx-form")) {

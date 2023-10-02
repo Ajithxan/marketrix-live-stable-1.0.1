@@ -110,13 +110,13 @@ const mouse = {
             // cursorLoading.classList.remove("mtx-hidden")
 
             if (getFromStore("LOADING_MESSAGE")) message = getFromStore("LOADING_MESSAGE")
-            mtxOverlayLoading.classList.remove("mtx-hidden")
-            mtxLoadingMessageDiv.innerText = message
+            mtxOverlayLoading?.classList.remove("mtx-hidden")
+            if (mtxLoadingMessageDiv) mtxLoadingMessageDiv.innerText = message
         },
         hide: () => {
             // videoContainer.classList.remove("mtx-hidden")
             // cursorLoading.classList.add("mtx-hidden")
-            
+
             if (getFromStore("LOADING_MESSAGE")) removeFromStore("LOADING_MESSAGE")
             mtxOverlayLoading.classList.add("mtx-hidden")
         }
