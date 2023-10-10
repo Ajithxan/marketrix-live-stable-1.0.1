@@ -56,7 +56,7 @@ const submit = async () => {
         locationHref: window.location.href,
         ipAddress,
         geoLocation,
-        country: 'United States',
+        country: country,
     };
 
     if (!validate("mtx-form")) {

@@ -56,7 +56,7 @@ const initiateSocketConnection = () => {
                 windowHeight: window?.innerHeight,
                 windowResolution: window?.innerWidth + "x" + window?.innerHeight,
                 ipAddress: "",
-                country: "United States",
+                country: country,
             };
             let visitor = { visitedTime, currentUrl, visitorDevice };
             SOCKET.emit.connectVisitor(visitor)
@@ -203,13 +203,17 @@ const checkMeetingVariables = () => {
     }
 }
 
-
-
 // get ip address
 fetch('https://api.ipify.org/?format=json')
     .then(response => response.json())
     .then((data) => {
+        console.log("IP Address", data.ip)
         ipAddress = data.ip
+
+        fetch(`https://ipapi.co/${ipAddress}/json/`).then(response => response.json()).then(data => {
+            country = data.country_name
+            console.log("country", country)
+        })
     });
 
 const initiateSnippet = () => {
