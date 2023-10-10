@@ -24,6 +24,10 @@ const meetingVariables = {
     inquiryId: "",
     message: "",
 };
+let mtxConfigurationComponent
+let showCursorDiv
+let mtxModeBtn
+let mtxAdminGridScreen
 let parentDiv
 let contactFormDiv
 let video; //video sdk

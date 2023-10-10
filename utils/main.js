@@ -1,15 +1,15 @@
-console.log("main.js is established #10")
+console.log("main.js is established #13")
 const setCDNLink = () => {
     const links = document.getElementsByTagName('link')
     const imgs = document.getElementsByTagName('img')
     // change all href
     for (const link of links) {
-        const linkAttr = link.getAttribute("href").replace("{{CDN_LINK}}", CDNlink)
+        let linkAttr = link.getAttribute("href").replace("{{CDN_LINK}}", CDNlink)
         link.setAttribute("href", linkAttr)
     }
     // change all src
     for (const img of imgs) {
-        const imgSrc = img.getAttribute("src").replace("{{CDN_LINK}}", CDNlink)
+        let imgSrc = img.getAttribute("src").replace("{{CDN_LINK}}", CDNlink)
         img.setAttribute("src", imgSrc)
     }
 }
@@ -72,10 +72,10 @@ const adminJoin = () => {
     setToStore("MEETING_ENDED", meetingEnded)
     showModal()
     // hide notfication and cursor header of form
-    mtxCursorHeader.classList.add("mtx-hidden")
-    mtxContactFormNotificationCard.classList.add("mtx-hidden")
-    mtxFormContent.classList.add("mtx-hidden")
-    mtxFormCloseBtn.classList.add("mtx-hidden")
+    style.hide(mtxCursorHeader)
+    style.hide(mtxContactFormNotificationCard)
+    style.hide(mtxFormContent)
+    style.hide(mtxFormCloseBtn)
 
     if (meetingVariables.id && meetingVariables.token) meetingObj.connect(); // video sdk screen is starting
 
@@ -203,6 +203,8 @@ const checkMeetingVariables = () => {
     }
 }
 
+
+
 // get ip address
 fetch('https://api.ipify.org/?format=json')
     .then(response => response.json())
@@ -229,9 +231,17 @@ const initiateSnippet = () => {
             return response.text();
         })
         .then((html) => {
-            parentDiv.innerHTML = html;
+            parentDiv.innerHTML = html; // rendering
             marketrixButton = document.getElementById("marketrix-button");
-            setCDNLink()
+            // fetch json
+            fetch(`${CDNlink}data/contact-button.json`).then(response => {
+                return response.json()
+            }).then((data) => {
+                const htmlElementResponse = data[0]
+                render.initiate(marketrixButton, htmlElementResponse)
+                setCDNLink()
+            })
+
         });
 
     fetch(`${CDNlink}pages/contact-form.html`)
@@ -239,36 +249,50 @@ const initiateSnippet = () => {
             return response.text();
         })
         .then((html) => {
-            contactFormDiv.innerHTML = html;
+            contactFormDiv.innerHTML = html; // rendering
             marketrixModalContainer = document.getElementById(
                 "marketrix-modal-container"
             );
-            mtxContactFormNotificationCard = document.getElementById("mtx-contact-form-notification-card")
-            mtxFormContent = document.getElementById("mtx-form-content")
-            mtxAdminCallDiv = document.getElementById("mtx-admin-call-div")
-            mtxFooterControl = document.getElementById("mtx-footer-controls")
-            mtxFormCloseBtn = document.getElementById("mtx-form-close-btn")
-            mtxConnectBtn = document.getElementById("mtx-btn-connect")
-            mtxEndCallBtn = document.getElementById("mtx-btn-endcall")
-            mtxCursorHeader = document.getElementById("mtx-cursor-header")
-            overlay = document.querySelector(".mtx-overlay");
-            currentUrl = window.location.href // set current Url
-            setCDNLink()
-            generateCursorId() // generate cursor id
-            initiateWatchMethod() // iniate watch methods
-            checkUrlChanges() // this method would be called when redirecting or reloading
-            setToStore('CURRENT_URL', currentUrl) // set current url in the store
-            setUserRole() // set user role
-            initiateSocketConnection() // initialize socket connection
-            checkMeetingVariables() // this method would be called when redirection or reloading
-            getQuery() // admin get request
+            style.hide(marketrixModalContainer)
+            // fetch elements
+            fetch(`${CDNlink}data/contact-form.json`).then(response => {
+                return response.json()
+            }).then((data) => {
+                const htmlElementResponse = data[0]
+                render.initiate(marketrixModalContainer, htmlElementResponse)
 
-            // show these element after everything is loaded properly
-            setTimeout(() => {
-                parentDiv.style.display = "block"
-                contactFormDiv.style.display = "block"
+                mtxContactFormNotificationCard = document.getElementById("mtx-contact-form-notification-card")
+                style.hide(mtxContactFormNotificationCard) // default hide
+                mtxFormContent = document.getElementById("mtx-form-content")
+                mtxAdminCallDiv = document.getElementById("mtx-admin-call-div")
+                style.hide(mtxAdminCallDiv) // default hide
+                mtxFooterControl = document.getElementById("mtx-footer-controls")
+                mtxFormCloseBtn = document.getElementById("mtx-form-close-btn")
+                mtxConnectBtn = document.getElementById("mtx-btn-connect")
+                mtxEndCallBtn = document.getElementById("mtx-btn-endcall")
+                style.hide(mtxEndCallBtn) // default hide
+                mtxCursorHeader = document.getElementById("mtx-cursor-header")
+                mtxAdminGridScreen = document.getElementById("mtx-admin-grid-screen")
+                style.hide(mtxAdminGridScreen) // default hide
+                overlay = document.querySelector(".mtx-overlay");
+                currentUrl = window.location.href // set current Url
+                setCDNLink()
+                generateCursorId() // generate cursor id
+                initiateWatchMethod() // iniate watch methods
+                checkUrlChanges() // this method would be called when redirecting or reloading
+                setToStore('CURRENT_URL', currentUrl) // set current url in the store
+                setUserRole() // set user role
+                initiateSocketConnection() // initialize socket connection
+                checkMeetingVariables() // this method would be called when redirection or reloading
+                getQuery() // admin get request
 
-            }, 2000)
+                // show these element after everything is loaded properly
+                setTimeout(() => {
+                    parentDiv.style.display = "block"
+                    contactFormDiv.style.display = "block"
+
+                }, 2000)
+            })
         });
 };
 
@@ -282,36 +306,6 @@ document.addEventListener("keydown", function (event) {
         closeModal();
     }
 });
-
-const closeModal = () => {
-    marketrixButton.classList.remove("mtx-hidden")
-    marketrixModalContainer.classList.add("mtx-hidden")
-    mtxContactFormNotificationCard.classList.add("mtx-hidden")
-    mtxFormContent.classList.remove("mtx-hidden")
-    // overlay.classList.add("mtx-hidden");
-};
-
-const showModal = () => {
-    marketrixButton?.classList.add("mtx-hidden");
-    marketrixModalContainer?.classList.remove("mtx-hidden");
-    // overlay.classList.remove("mtx-hidden");
-
-    const elements = document.querySelectorAll(`#mtx-form .mtx-form-control`)
-
-    elements.forEach(element => {
-        const name = element.attributes.name.nodeValue
-        const field = document.querySelector(`[name="${name}"]`)
-
-        field.classList.remove("mtx-form-control-error")
-    })
-
-    if (!(/null/).test(getFromStore("MEETING_ENDED")) && ((/false/).test(getFromStore("MEETING_ENDED")) || !getFromStore("MEETING_ENDED"))) {
-        mtxCursorHeader.classList.add("mtx-hidden")
-        mtxContactFormNotificationCard.classList.add("mtx-hidden")
-        mtxFormContent.classList.add("mtx-hidden")
-        mtxFormCloseBtn.classList.add("mtx-hidden")
-    }
-};
 
 const connectAdminToLive = (meetInfo) => {
     SOCKET.emit.userJoinLive(meetInfo) // admin join live
@@ -356,74 +350,6 @@ const showNotification = (isAgentAvailable = true) => {
 
 }
 
-const validate = (id) => {
-    const elements = document.querySelectorAll(`#${id} .mtx-form-control`)
-    let error = true;
-
-    for (const element of elements) {
-        const name = element.attributes.name.nodeValue
-        const field = document.querySelector(`[name="${name}"]`)
-        const value = field.value
-
-        if (value && value !== "Select a Inquiry Type") field.classList.remove("mtx-form-control-error")
-        else field.classList.add("mtx-form-control-error")
-
-    }
-
-    for (const element of elements) {
-        const name = element.attributes.name.nodeValue
-        const field = document.querySelector(`[name="${name}"]`)
-        const value = field.value
-
-        if (value && value !== "Select a Inquiry Type") error = false
-        else { error = true; break }
-    }
-
-    return error;
-}
-
-const submit = async () => {
-    const visitorDevice = {
-        browser: navigator?.userAgentData?.brands[2]?.brand || browserName,
-        browserVersion:
-            navigator?.userAgentData?.brands[2]?.version || browserVersion,
-        platform: navigator?.platform,
-        networkDownlink: navigator?.connection?.downlink,
-        networkEffectiveType: navigator?.connection?.effectiveType,
-        vendor: navigator?.vendor,
-        screenResolution: window?.screen?.width + "x" + window?.screen?.height,
-        screenWidth: window?.screen?.width,
-        screenHeight: window?.screen?.height,
-        windowWidth: window?.innerWidth,
-        windowHeight: window?.innerHeight,
-        windowResolution: window?.innerWidth + "x" + window?.innerHeight,
-    };
-
-    const visitorPosition = await getCursorLocation(event);
-
-    const visitor = {
-        name: document.querySelector('[name="name"]').value,
-        email: document.querySelector('[name="email"]').value,
-        // phone_no: document.querySelector('[name="phone_no"]').value,
-        inquiry_type: "General", //document.querySelector('[name="inquiry_type"]').value,
-        message: document.querySelector('[name="message"]').value,
-        website_domain: document.location.origin,
-        visitorDevice: visitorDevice,
-        visitorPosition: visitorPosition,
-        locationHref: window.location.href,
-        ipAddress,
-        geoLocation,
-        country: 'United States',
-    };
-
-    if (!validate("mtx-form")) {
-        removeFromStore("MEETING_VARIABLES") // remove meeting variables when submit new data
-        meetingVariables.id = false
-
-        SOCKET.emit.visitorRequestMeet(visitor)
-    }
-};
-
 const getCursorLocation = async (event) => {
     const { clientX, clientY } = event;
     let x = clientX;
@@ -439,7 +365,7 @@ const getWindowSize = () => {
     return { innerWidth, innerHeight };
 };
 
-const sentInquiryToDb = (data) => {
+const sendInquiryToDb = (data) => {
     let currentUrl = window.location.hostname;
 
     let inquiry = {

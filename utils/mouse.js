@@ -12,13 +12,11 @@ const mouse = {
         const localId = meetingVariables.participant.localId;
         const remoteId = meetingVariables.participant.remoteId;
         const remoteCursorDiv = document.getElementById(`cp-${remoteId}`);
-        const mtxModeBtn = document.getElementById("marketrix-mode-btn")
         const focusModeBtn = document.getElementById("focus-mode-btn")
 
-
-        configurationCoverDiv.classList.add("mtx-hidden");
-        mtxModeBtn.classList.remove("mtx-hidden")
-        focusModeBtn.classList.add("mtx-hidden")
+        style.hide(configurationCoverDiv)
+        style.show(mtxModeBtn)
+        style.hide(focusModeBtn)
 
         if (meetingVariables.userRole === "admin") {
             mouse.marketrixMode = true;
@@ -27,7 +25,7 @@ const mouse = {
         } // admin make the cursor movement on both side
         mouse.startMove();
 
-        if (remoteCursorDiv) remoteCursorDiv.classList.remove("mtx-hidden"); // show
+        if (remoteCursorDiv) style.show(remoteCursorDiv)
 
         if (localId) mouse.cursorFrameElement(localId, true, true)
         if (remoteId && !localCursor) mouse.cursorFrameElement(remoteId, false, true)
@@ -36,12 +34,11 @@ const mouse = {
         const localId = meetingVariables.participant.localId;
         const remoteId = meetingVariables.participant.remoteId;
         const remoteCursorDiv = document.getElementById(`cp-${remoteId}`);
-        const mtxModeBtn = document.getElementById("marketrix-mode-btn")
         const focusModeBtn = document.getElementById("focus-mode-btn")
 
-        configurationCoverDiv.classList.remove("mtx-hidden");
-        mtxModeBtn.classList.add("mtx-hidden")
-        focusModeBtn.classList.remove("mtx-hidden")
+        style.show(configurationCoverDiv)
+        style.hide(mtxModeBtn)
+        style.show(focusModeBtn)
 
         if (meetingVariables.userRole === "admin") {
             mouse.marketrixMode = false;
@@ -49,7 +46,7 @@ const mouse = {
             SOCKET.emit.modeChange({ mode: false, meetingId: meetingVariables.id })
         }
 
-        remoteCursorDiv.classList.add("mtx-hidden"); // hide
+        style.hide(remoteCursorDiv)
 
         if (localId) mouse.cursorFrameElement(localId, true, false)
         if (remoteId && !localCursor) mouse.cursorFrameElement(remoteId, false, false)
@@ -71,7 +68,7 @@ const mouse = {
         show ? vLocalDiv.classList.remove("mtx-video-frame") : vLocalDiv.classList.add("mtx-video-frame")
         show ? videoDisabledDiv.classList.add("mtx-moving-video-disabled-div") : videoDisabledDiv.classList.remove("mtx-moving-video-disabled-div")
         show ? videoDisabledDiv.classList.remove("mtx-video-disabled-div") : videoDisabledDiv.classList.add("mtx-video-disabled-div")
-        show ?? videoContainer.classList.remove("mtx-hidden")
+        show ?? style.show(videoContainer)
         show ? videoContainer.classList.add("mtx-mode-video-container") : videoContainer.classList.remove("mtx-mode-video-container")
     },
     handleMouse: (event) => {
@@ -105,20 +102,13 @@ const mouse = {
     },
     loading: {
         show: (message = "Connecting...") => {
-            // mouse.startMove()
-            // videoContainer.classList.add("mtx-hidden")
-            // cursorLoading.classList.remove("mtx-hidden")
-
             if (getFromStore("LOADING_MESSAGE")) message = getFromStore("LOADING_MESSAGE")
-            mtxOverlayLoading?.classList.remove("mtx-hidden")
+            mtxOverlayLoading && style.show(mtxOverlayLoading)
             if (mtxLoadingMessageDiv) mtxLoadingMessageDiv.innerText = message
         },
         hide: () => {
-            // videoContainer.classList.remove("mtx-hidden")
-            // cursorLoading.classList.add("mtx-hidden")
-
             if (getFromStore("LOADING_MESSAGE")) removeFromStore("LOADING_MESSAGE")
-            mtxOverlayLoading.classList.add("mtx-hidden")
+            style.hide(mtxOverlayLoading)
         }
     }
 };

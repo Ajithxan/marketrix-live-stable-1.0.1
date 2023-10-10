@@ -174,21 +174,20 @@ const SOCKET = {
                 visitor.visitor_socket_id = socket.id;
                 visitor.inquiry_status = "incoming";
                 console.log("visitorRequestMeet", visitor);
-                sentInquiryToDb(visitor);
+                sendInquiryToDb(visitor);
                 socket.emit("VisitorRequestMeet", visitor);
-                mtxContactFormNotificationCard.classList.remove("mtx-hidden");
-                mtxFormContent.classList.add("mtx-hidden");
-                mtxFormCloseBtn.classList.add("mtx-hidden");
+                style.show(mtxContactFormNotificationCard)
+                style.hide(mtxFormContent)
+                style.hide(mtxFormCloseBtn)
                 showNotification();
                 SOCKET.on.adminResponseToVisitor();
             } else {
 
-                mtxContactFormNotificationCard.classList.remove("mtx-hidden");
-                mtxFormContent.classList.add("mtx-hidden");
-                // mtxFormCloseBtn.classList.add("mtx-hidden")
+                style.show(mtxContactFormNotificationCard)
+                style.hide(mtxFormContent)
                 visitor.inquiry_status = "missed";
                 showNotification(false);
-                sentInquiryToDb(visitor);
+                sendInquiryToDb(visitor);
             }
         },
         modeChange: (marketrixMode) => {

@@ -12,8 +12,8 @@ const meetingObj = {
         const videoConfigDiv = document.createElement("div");
         videoConfigDiv.setAttribute("id", "video-sdk-config");
         document.body.prepend(videoConfigDiv);
-        mtxConnectBtn.classList.add("mtx-hidden");
-        mtxEndCallBtn.classList.remove("mtx-hidden");
+        style.hide(mtxConnectBtn)
+        style.show(mtxEndCallBtn)
 
         meetingEnded = false;
         setToStore("MEETING_ENDED", meetingEnded);
@@ -23,21 +23,39 @@ const meetingObj = {
                 return response.text();
             })
             .then((html) => {
-                videoConfigDiv.innerHTML = html;
-                videoContainer = document.getElementById("mtx-video-container");
-                configurationCoverDiv = document.getElementById(
-                    "mtx-configuration-cover"
-                );
-                gridScreenDiv = document.getElementById("mtx-grid-screen");
-                cursorLoading = document.getElementById("cursor-loading");
-                mtxOverlayLoading = document.getElementById("mtx-overlay-loading")
-                mtxLoadingMessageDiv = document.getElementById("mtx-loading-message")
-                marketrixButton?.classList.add("mtx-hidden");
-                mouse.loading.show();
-                setCDNLink();
-                setTimeout(() => {
-                    meetingObj.joinMeeting();
-                }, 1000);
+                videoConfigDiv.innerHTML = html; // rendering
+                mtxConfigurationComponent = document.getElementById("mtx-configuration-component")
+
+                // fetch 
+                fetch(`${CDNlink}data/configuration.json`).then(response => {
+                    return response.json()
+                }).then((data) => {
+                    const htmlElementResponse = data[0]
+                    render.initiate(mtxConfigurationComponent, htmlElementResponse)
+
+                    videoContainer = document.getElementById("mtx-video-container");
+                    configurationCoverDiv = document.getElementById(
+                        "mtx-configuration-cover"
+                    );
+                    style.hide(configurationCoverDiv) // default hide
+                    gridScreenDiv = document.getElementById("mtx-grid-screen");
+                    style.hide(gridScreenDiv) // default hide
+                    cursorLoading = document.getElementById("cursor-loading");
+                    mtxOverlayLoading = document.getElementById("mtx-overlay-loading")
+                    style.hide(mtxOverlayLoading) // default hide
+                    mtxLoadingMessageDiv = document.getElementById("mtx-loading-message")
+                    mtxModeBtn = document.getElementById("marketrix-mode-btn")
+                    style.hide(mtxModeBtn) // default hide
+                    showCursorDiv = document.getElementById("show-cursor");
+                    style.hide(showCursorDiv) // default hide
+                    marketrixButton && style.hide(marketrixButton)
+                    mouse.loading.show();
+                    setCDNLink();
+                    setTimeout(() => {
+                        meetingObj.joinMeeting();
+                    }, 1000);
+                })
+
             });
     },
 
@@ -69,11 +87,11 @@ const meetingObj = {
 
             // meeting joined event
             meetingObj.meeting.on("meeting-joined", () => {
-                gridScreenDiv?.classList.remove("mtx-hidden");
+                style.show(gridScreenDiv)
+                gridScreenDiv && style.show(gridScreenDiv)
                 if (meetingVariables.userRole === "admin") {
                     connectAdminToLive(decodedObject);
-                    const showCursorDiv = document.getElementById("show-cursor");
-                    showCursorDiv.classList.remove("mtx-hidden");
+                    style.show(showCursorDiv)
                     if ((/true/).test(firstTimeAdminRequest)) mouse.show()
                 } // if admin joined, it'll emit to visitor
             });
@@ -113,12 +131,12 @@ const meetingObj = {
                         aiDiv.classList.add("fa-solid");
                         aiDiv.classList.add("fa-microphone");
                     } else {
-                        document
-                            .getElementById(`v-${remoteId}`)
-                            .classList.remove("mtx-hidden");
-                        document
-                            .getElementById(`vd-${remoteId}`)
-                            .classList.add("mtx-hidden");
+
+                        style.show(document
+                            .getElementById(`v-${remoteId}`))
+
+                        style.hide(document
+                            .getElementById(`vd-${remoteId}`))
                     }
                     meetingObj.setTrack(stream, audioElement, participant, false);
                 });
@@ -141,12 +159,12 @@ const meetingObj = {
                                 adminVideoDisabledImage
                             ); // set admin profile here
                         }
-                        document
-                            .getElementById(`v-${remoteId}`)
-                            .classList.add("mtx-hidden");
-                        document
-                            .getElementById(`vd-${remoteId}`)
-                            .classList.remove("mtx-hidden");
+
+                        style.hide(document
+                            .getElementById(`v-${remoteId}`))
+
+                        style.show(document
+                            .getElementById(`vd-${remoteId}`))
                     }
                     meetingObj.setTrack(stream, audioElement, participant, false);
                 });
@@ -160,7 +178,7 @@ const meetingObj = {
                 );
                 cursorPointer.classList.add("mtx-remote-cursor");
                 cursorPointerDiv.classList.add("mtx-remote-cursor-png-div");
-                cursorPointerDiv.classList.add("mtx-hidden");
+                style.hide(cursorPointerDiv)
                 cursorPointerDiv.setAttribute("id", `cp-${participant.id}`); // remote id
                 cursorPointerDiv.style.top = "50vh"
                 cursorPointerDiv.appendChild(cursorPointer);
@@ -175,7 +193,7 @@ const meetingObj = {
                     mouse.show();
                 else {
                     mouse.hide();
-                    videoContainer.classList.remove("mtx-hidden");
+                    style.show(videoContainer)
                     videoContainer.classList.add("mtx-mode-video-container")
                 }
             });
@@ -250,7 +268,7 @@ const meetingObj = {
 
         // video disabled
         let videoDisabledDiv = document.createElement("div");
-        videoDisabledDiv.classList.add("mtx-hidden");
+        style.hide(videoDisabledDiv)
         videoDisabledDiv.setAttribute("id", `vd-${pId}`);
 
         // video disabled image
@@ -288,7 +306,7 @@ const meetingObj = {
         audioElement.setAttribute("playsInline", "true");
         audioElement.setAttribute("controls", "false");
         audioElement.setAttribute("id", `a-${pId}`);
-        audioElement.classList.add("mtx-hidden")
+        style.hide(audioElement)
         return audioElement;
     },
 
@@ -363,16 +381,16 @@ const meetingObj = {
                         "src",
                         adminVideoDisabledImage
                     ); // set admin profile image here
-                document.getElementById(`v-${localId}`).classList.add("mtx-hidden");
-                document.getElementById(`vd-${localId}`).classList.remove("mtx-hidden");
+                style.hide(document.getElementById(`v-${localId}`))
+                style.show(document.getElementById(`vd-${localId}`))
             } else {
                 meetingObj.meeting?.enableWebcam();
                 webCamIconElem.classList.remove("fa-solid");
                 webCamIconElem.classList.remove("fa-video-slash");
                 webCamIconElem.classList.add("fas");
                 webCamIconElem.classList.add("fa-video");
-                document.getElementById(`v-${localId}`).classList.remove("mtx-hidden");
-                document.getElementById(`vd-${localId}`).classList.add("mtx-hidden");
+                style.show(document.getElementById(`v-${localId}`))
+                style.hide(document.getElementById(`vd-${localId}`))
             }
             meetingObj.isWebCamOn = !meetingObj.isWebCamOn;
         },
@@ -440,7 +458,7 @@ const adminMeetingObj = {
 
             // meeting joined event
             adminMeetingObj.meeting.on("meeting-joined", () => {
-                document.getElementById("mtx-admin-grid-screen").classList.remove("mtx-hidden");
+                style.show(mtxAdminGridScreen)
             });
 
             // meeting left event
@@ -491,8 +509,8 @@ const adminMeetingObj = {
                 showModal()
                 const audio = new Audio(`${CDNlink}assets/sounds/call-ring.wav`);
                 audio.play();
-                mtxFooterControl.classList.add("mtx-hidden")
-                mtxAdminCallDiv.classList.remove("mtx-hidden")
+                style.hide(mtxFooterControl)
+                style.show(mtxAdminCallDiv)
             });
 
             // participants left
@@ -573,7 +591,7 @@ const adminMeetingObj = {
         audioElement.setAttribute("playsInline", "true");
         audioElement.setAttribute("controls", "false");
         audioElement.setAttribute("id", `a-${pId}`);
-        audioElement.classList.add("mtx-hidden")
+        style.hide(audioElement)
         return audioElement;
     },
 
@@ -596,7 +614,7 @@ const joinMeeting = (videoEnabled) => {
     }
     adminMeetingObj.leaveMeeting()
     adminConnects = false
-    document.getElementById("mtx-admin-call-div").classList.add("mtx-hidden")
-    document.getElementById("mtx-footer-controls").classList.remove("mtx-hidden")
+    style.hide(document.getElementById("mtx-admin-call-div"))
+    style.show(document.getElementById("mtx-footer-controls"))
     checkMeetingVariables()
 }
