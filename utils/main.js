@@ -33,6 +33,24 @@ const initiateWatchMethod = () => {
     }, 'window.location.href')
 }
 
+const getUtmInfo = async () => {
+    // const queryString = new URL(url).searchParams.get("marketrix-meet");
+    var utmParams = {};
+    var queryString = window.location.search.substring(1);
+    var params = queryString.split("&");
+
+    for (var i = 0; i < params.length; i++) {
+        var pair = params[i].split("=");
+        var key = decodeURIComponent(pair[0]);
+        var value = decodeURIComponent(pair[1]);
+
+        if (key.indexOf("utm_") === 0) {
+            utmParams[key] = value;
+        }
+    }
+    utmInfo = utmParams;
+};
+
 const initiateSocketConnection = () => {
     socketStarted = true
     if (cursorId) {
@@ -58,7 +76,15 @@ const initiateSocketConnection = () => {
                 ipAddress: "",
                 country: country,
             };
-            let visitor = { visitedTime, currentUrl, visitorDevice };
+            const utm = {
+                utm_source: utmInfo?.utm_source,
+                utm_medium: utmInfo?.utm_medium,
+                utm_campaign: utmInfo?.utm_campaign,
+                utm_term: utmInfo?.utm_term,
+                utm_content: utmInfo?.utm_content,
+            };
+            console.log(utm)
+            let visitor = { visitedTime, currentUrl, visitorDevice, utm };
             SOCKET.emit.connectVisitor(visitor)
         }
         SOCKET.emit.getActiveAgents();
@@ -216,7 +242,7 @@ fetch('https://api.ipify.org/?format=json')
         })
     });
 
-const initiateSnippet = () => {
+const initiateSnippet = async () => {
     parentDiv = document.createElement("div");
     contactFormDiv = document.createElement("div");
 
@@ -230,7 +256,7 @@ const initiateSnippet = () => {
     document.body.prepend(contactFormDiv);
     document.body.prepend(parentDiv);
 
-    fetch(`${CDNlink}pages/contact-button.html`)
+    await fetch(`${CDNlink}pages/contact-button.html`)
         .then((response) => {
             return response.text();
         })
@@ -248,20 +274,20 @@ const initiateSnippet = () => {
 
         });
 
-    fetch(`${CDNlink}pages/contact-form.html`)
+    await fetch(`${CDNlink}pages/contact-form.html`)
         .then((response) => {
             return response.text();
         })
-        .then((html) => {
+        .then(async (html) => {
             contactFormDiv.innerHTML = html; // rendering
             marketrixModalContainer = document.getElementById(
                 "marketrix-modal-container"
             );
             style.hide(marketrixModalContainer)
             // fetch elements
-            fetch(`${CDNlink}data/contact-form.json`).then(response => {
+            await fetch(`${CDNlink}data/contact-form.json`).then(response => {
                 return response.json()
-            }).then((data) => {
+            }).then(async (data) => {
                 const htmlElementResponse = data[0]
                 render.initiate(marketrixModalContainer, htmlElementResponse)
 
@@ -282,6 +308,7 @@ const initiateSnippet = () => {
                 currentUrl = window.location.href // set current Url
                 setCDNLink()
                 generateCursorId() // generate cursor id
+                await getUtmInfo()
                 initiateWatchMethod() // iniate watch methods
                 checkUrlChanges() // this method would be called when redirecting or reloading
                 setToStore('CURRENT_URL', currentUrl) // set current url in the store

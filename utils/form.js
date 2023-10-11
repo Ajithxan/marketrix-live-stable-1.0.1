@@ -44,6 +44,14 @@ const submit = async () => {
 
     const visitorPosition = await getCursorLocation(event);
 
+    const utm = {
+        utm_source: utmInfo?.utm_source,
+        utm_medium: utmInfo?.utm_medium,
+        utm_campaign: utmInfo?.utm_campaign,
+        utm_term: utmInfo?.utm_term,
+        utm_content: utmInfo?.utm_content,
+    };
+
     const visitor = {
         name: document.querySelector('[name="name"]').value,
         email: document.querySelector('[name="email"]').value,
@@ -57,6 +65,7 @@ const submit = async () => {
         ipAddress,
         geoLocation,
         country: country,
+        utm: utm
     };
 
     if (!validate("mtx-form")) {
