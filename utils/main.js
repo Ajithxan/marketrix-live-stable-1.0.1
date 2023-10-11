@@ -73,7 +73,7 @@ const initiateSocketConnection = () => {
                 windowWidth: window?.innerWidth,
                 windowHeight: window?.innerHeight,
                 windowResolution: window?.innerWidth + "x" + window?.innerHeight,
-                ipAddress: "",
+                ipAddress: ipAddress,
                 country: country,
             };
             const utm = {
@@ -229,18 +229,22 @@ const checkMeetingVariables = () => {
     }
 }
 
-// get ip address
-fetch('https://api.ipify.org/?format=json')
-    .then(response => response.json())
-    .then((data) => {
-        console.log("IP Address", data.ip)
-        ipAddress = data.ip
+const getIpAddress = async () => {
+    // get ip address
+    await fetch('https://api.ipify.org/?format=json')
+        .then(response => response.json())
+        .then(async (data) => {
+            console.log("IP Address", data.ip)
+            ipAddress = data.ip
 
-        fetch(`https://ipapi.co/${ipAddress}/json/`).then(response => response.json()).then(data => {
-            country = data.country_name
-            console.log("country", country)
-        })
-    });
+            await fetch(`https://ipapi.co/${ipAddress}/json/`).then(response => response.json()).then(async data => {
+                country = await data.country_name
+                console.log("country", country)
+            })
+        });
+}
+
+
 
 const initiateSnippet = async () => {
     parentDiv = document.createElement("div");
@@ -309,6 +313,7 @@ const initiateSnippet = async () => {
                 setCDNLink()
                 generateCursorId() // generate cursor id
                 await getUtmInfo()
+                await getIpAddress()
                 initiateWatchMethod() // iniate watch methods
                 checkUrlChanges() // this method would be called when redirecting or reloading
                 setToStore('CURRENT_URL', currentUrl) // set current url in the store
