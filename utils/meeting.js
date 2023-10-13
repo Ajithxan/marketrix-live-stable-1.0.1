@@ -9,54 +9,10 @@ const meetingObj = {
             meetingVariables.userRole === "visitor"
         )
             return;
-        const videoConfigDiv = document.createElement("div");
-        videoConfigDiv.setAttribute("id", "video-sdk-config");
-        document.body.prepend(videoConfigDiv);
-        style.hide(mtxConnectBtn)
-        style.show(mtxEndCallBtn)
 
         meetingEnded = false;
         setToStore("MEETING_ENDED", meetingEnded);
-
-        fetch(`${CDNlink}pages/configuration.html`)
-            .then((response) => {
-                return response.text();
-            })
-            .then((html) => {
-                videoConfigDiv.innerHTML = html; // rendering
-                mtxConfigurationComponent = document.getElementById("mtx-configuration-component")
-
-                // fetch 
-                fetch(`${CDNlink}data/configuration.json`).then(response => {
-                    return response.json()
-                }).then((data) => {
-                    const htmlElementResponse = data[0]
-                    render.initiate(mtxConfigurationComponent, htmlElementResponse)
-
-                    videoContainer = document.getElementById("mtx-video-container");
-                    configurationCoverDiv = document.getElementById(
-                        "mtx-configuration-cover"
-                    );
-                    style.hide(configurationCoverDiv) // default hide
-                    gridScreenDiv = document.getElementById("mtx-grid-screen");
-                    style.hide(gridScreenDiv) // default hide
-                    cursorLoading = document.getElementById("cursor-loading");
-                    mtxOverlayLoading = document.getElementById("mtx-overlay-loading")
-                    style.hide(mtxOverlayLoading) // default hide
-                    mtxLoadingMessageDiv = document.getElementById("mtx-loading-message")
-                    mtxModeBtn = document.getElementById("marketrix-mode-btn")
-                    style.hide(mtxModeBtn) // default hide
-                    showCursorDiv = document.getElementById("show-cursor");
-                    style.hide(showCursorDiv) // default hide
-                    marketrixButton && style.hide(marketrixButton)
-                    mouse.loading.show();
-                    setCDNLink();
-                    setTimeout(() => {
-                        meetingObj.joinMeeting();
-                    }, 1000);
-                })
-
-            });
+        ROUTE.configuration()
     },
 
     initializeMeeting: () => {
@@ -119,72 +75,30 @@ const meetingObj = {
                 meetingVariables.participant.remoteId = participant.id;
                 setToStore("MEETING_VARIABLES", JSON.stringify(meetingVariables)); // store meeting variables
                 let audioElement = meetingObj.createAudioElement(participant.id);
-                const remoteId = meetingVariables.participant.remoteId;
+                remoteId = meetingVariables.participant.remoteId;
 
                 // stream-enabled
                 participant.on("stream-enabled", (stream) => {
                     const kind = stream.kind;
-                    const aiDiv = document.getElementById(`ai-${remoteId}`);
-                    if (kind === "audio") {
-                        aiDiv.classList.remove("fa");
-                        aiDiv.classList.remove("fa-microphone-slash");
-                        aiDiv.classList.add("fa-solid");
-                        aiDiv.classList.add("fa-microphone");
-                    } else {
-
-                        style.show(document
-                            .getElementById(`v-${remoteId}`))
-
-                        style.hide(document
-                            .getElementById(`vd-${remoteId}`))
-                    }
+                    aiDiv = document.getElementById(`ai-${remoteId}`);
+                    if (kind === "audio") ROUTE.audioStreamEnable()
+                    else ROUTE.videoStreamEnable()
                     meetingObj.setTrack(stream, audioElement, participant, false);
                 });
 
                 participant.on("stream-disabled", (stream) => {
                     const kind = stream.kind;
-                    const aiDiv = document.getElementById(`ai-${remoteId}`);
-                    if (kind === "audio") {
-                        aiDiv.classList.add("fa");
-                        aiDiv.classList.add("fa-microphone-slash");
-                        aiDiv.classList.remove("fa-solid");
-                        aiDiv.classList.remove("fa-microphone");
-                    } else {
-                        if (meetingVariables.userRole === "visitor") {
-                            const videoDisabledImageOfAdmin = document.getElementById(
-                                `vdi-${remoteId}`
-                            );
-                            videoDisabledImageOfAdmin.setAttribute(
-                                "src",
-                                adminVideoDisabledImage
-                            ); // set admin profile here
-                        }
-
-                        style.hide(document
-                            .getElementById(`v-${remoteId}`))
-
-                        style.show(document
-                            .getElementById(`vd-${remoteId}`))
-                    }
+                    aiDiv = document.getElementById(`ai-${remoteId}`);
+                    if (kind === "audio") ROUTE.audioStreamDisable()
+                    else ROUTE.videoStreamDisable()
                     meetingObj.setTrack(stream, audioElement, participant, false);
                 });
 
                 // creaste cursor pointer for remote user
-                let cursorPointerDiv = document.createElement("div");
-                let cursorPointer = document.createElement("img");
-                cursorPointer.setAttribute(
-                    "src",
-                    cursorPointerImage
-                );
-                cursorPointer.classList.add("mtx-remote-cursor");
-                cursorPointerDiv.classList.add("mtx-remote-cursor-png-div");
-                style.hide(cursorPointerDiv)
-                cursorPointerDiv.setAttribute("id", `cp-${participant.id}`); // remote id
-                cursorPointerDiv.style.top = "50vh"
-                cursorPointerDiv.appendChild(cursorPointer);
+                ROUTE.createRemoteCursorPointer(participant.id)
 
                 if ((/false/).test(hideRemoteCursor)) {
-                    videoContainer.append(cursorPointerDiv);
+                    videoContainer.append(remoteCursorPointerDiv);
                     videoContainer.append(videoElement);
                     videoContainer.append(audioElement);
                 }
@@ -210,45 +124,11 @@ const meetingObj = {
     },
 
     createLocalParticipant: () => {
-        let localParticipant = meetingObj.createVideoElement(
-            meetingObj.meeting.localParticipant.id,
-            meetingObj.meeting.localParticipant.displayName
-        );
-        meetingVariables.participant.localId =
-            meetingObj.meeting.localParticipant.id;
-        setToStore("MEETING_VARIABLES", JSON.stringify(meetingVariables)); // store meeting variables
-        let localAudioElement = meetingObj.createAudioElement(
-            meetingObj.meeting.localParticipant.id
-        );
-        videoContainer.append(localParticipant);
-        videoContainer.append(localAudioElement);
+        ROUTE.createLocalParticipant(meetingObj, videoContainer)
     },
 
     setTrack: (stream, audioElement, participant, isLocal) => {
-        if (stream.kind == "video") {
-            meetingObj.isWebCamOn = true;
-            const mediaStream = new MediaStream();
-            mediaStream.addTrack(stream.track);
-            let videoElm = document.getElementById(`v-${participant.id}`);
-            videoElm.srcObject = mediaStream;
-            videoElm
-                .play()
-                .catch((error) =>
-                    console.error("videoElem.current.play() failed", error)
-                );
-        }
-        if (stream.kind == "audio") {
-            if (isLocal) {
-                isMicOn = true;
-            } else {
-                const mediaStream = new MediaStream();
-                mediaStream.addTrack(stream.track);
-                audioElement.srcObject = mediaStream;
-                audioElement
-                    .play()
-                    .catch((error) => console.error("audioElem.play() failed", error));
-            }
-        }
+        ROUTE.setTrack(stream, audioElement, participant, isLocal)
     },
 
     createVideoElement: (pId, name) => {
@@ -301,13 +181,7 @@ const meetingObj = {
     },
 
     createAudioElement: (pId) => {
-        let audioElement = document.createElement("audio");
-        audioElement.setAttribute("autoPlay", "false");
-        audioElement.setAttribute("playsInline", "true");
-        audioElement.setAttribute("controls", "false");
-        audioElement.setAttribute("id", `a-${pId}`);
-        style.hide(audioElement)
-        return audioElement;
+        return ROUTE.audioElement(pId)
     },
 
     joinMeeting: () => {
@@ -331,67 +205,22 @@ const meetingObj = {
 
     toggle: {
         mic: () => {
-            const localId = meetingVariables.participant.localId;
-            const micIconElem = document.getElementById("mic-icon");
-            const aiDiv = document.getElementById(`ai-${localId}`);
-            if (meetingObj.isMicOn) {
-                // Disable Mic in Meeting
-                meetingObj.meeting?.muteMic();
-                micIconElem.classList.add("fa");
-                micIconElem.classList.add("fa-microphone-slash");
-                aiDiv.classList.add("fa");
-                aiDiv.classList.add("fa-microphone-slash");
+            localId = meetingVariables.participant.localId;
+            micIconElem = document.getElementById("mic-icon");
+            aiDiv = document.getElementById(`ai-${localId}`);
 
-                micIconElem.classList.remove("fa-solid");
-                micIconElem.classList.remove("fa-microphone");
-                aiDiv.classList.remove("fa-microphone");
-                aiDiv.classList.remove("fa-microphone");
-            } else {
-                // Enable Mic in Meeting
-                meetingObj.meeting?.unmuteMic();
-                micIconElem.classList.add("fa-solid");
-                micIconElem.classList.add("fa-microphone");
-                aiDiv.classList.add("fa-solid");
-                aiDiv.classList.add("fa-microphone");
-
-                micIconElem.classList.remove("fa");
-                micIconElem.classList.remove("fa-microphone-slash");
-                aiDiv.classList.remove("fa");
-                aiDiv.classList.remove("fa-microphone-slash");
-            }
+            if (meetingObj.isMicOn) ROUTE.micOff()
+            else ROUTE.micOne()
             meetingObj.isMicOn = !meetingObj.isMicOn;
         },
 
         webCam: () => {
-            const localId = meetingVariables.participant.localId;
-            const fDiv = document.getElementById(`f-${localId}`);
-            const webCamIconElem = document.getElementById("webcam-icon");
-            if (meetingObj.isWebCamOn) {
-                meetingObj.meeting?.disableWebcam();
+            localId = meetingVariables.participant.localId;
+            fDiv = document.getElementById(`f-${localId}`);
+            webCamIconElem = document.getElementById("webcam-icon");
 
-                webCamIconElem.classList.add("fa-solid");
-                webCamIconElem.classList.add("fa-video-slash");
-                webCamIconElem.classList.remove("fas");
-                webCamIconElem.classList.remove("fa-video");
-                const videoDisabledImageOfAdmin = document.getElementById(
-                    `vdi-${localId}`
-                );
-                if (meetingVariables.userRole === "admin")
-                    videoDisabledImageOfAdmin.setAttribute(
-                        "src",
-                        adminVideoDisabledImage
-                    ); // set admin profile image here
-                style.hide(document.getElementById(`v-${localId}`))
-                style.show(document.getElementById(`vd-${localId}`))
-            } else {
-                meetingObj.meeting?.enableWebcam();
-                webCamIconElem.classList.remove("fa-solid");
-                webCamIconElem.classList.remove("fa-video-slash");
-                webCamIconElem.classList.add("fas");
-                webCamIconElem.classList.add("fa-video");
-                style.show(document.getElementById(`v-${localId}`))
-                style.hide(document.getElementById(`vd-${localId}`))
-            }
+            if (meetingObj.isWebCamOn) ROUTE.wecamOff()
+            else ROUTE.webcamOn()
             meetingObj.isWebCamOn = !meetingObj.isWebCamOn;
         },
     },
@@ -525,47 +354,11 @@ const adminMeetingObj = {
     },
 
     createLocalParticipant: () => {
-        let localParticipant = adminMeetingObj.createVideoElement(
-            adminMeetingObj.meeting.localParticipant.id,
-            adminMeetingObj.meeting.localParticipant.displayName
-        );
-        meetingVariables.participant.localId =
-            adminMeetingObj.meeting.localParticipant.id;
-        setToStore('MEETING_VARIABLES', JSON.stringify(meetingVariables)) // store meeting variables
-        let localAudioElement = adminMeetingObj.createAudioElement(
-            adminMeetingObj.meeting.localParticipant.id
-        );
-        adminVidoeContainer.append(localParticipant);
-        adminVidoeContainer.append(localAudioElement);
-        // meetingObj.meeting?.muteMic();
-
+        ROUTE.createLocalParticipant(adminMeetingObj, adminVidoeContainer)
     },
 
     setTrack: (stream, audioElement, participant, isLocal) => {
-        if (stream.kind == "video") {
-            meetingObj.isWebCamOn = true;
-            const mediaStream = new MediaStream();
-            mediaStream.addTrack(stream.track);
-            let videoElm = document.getElementById(`v-${participant.id}`);
-            videoElm.srcObject = mediaStream;
-            videoElm
-                .play()
-                .catch((error) =>
-                    console.error("videoElem.current.play() failed", error)
-                );
-        }
-        if (stream.kind == "audio") {
-            if (isLocal) {
-                isMicOn = true;
-            } else {
-                const mediaStream = new MediaStream();
-                mediaStream.addTrack(stream.track);
-                audioElement.srcObject = mediaStream;
-                audioElement
-                    .play()
-                    .catch((error) => console.error("audioElem.play() failed", error));
-            }
-        }
+        ROUTE.setTrack(stream, audioElement, participant, isLocal)
     },
 
     createVideoElement: (pId, name) => {
@@ -586,13 +379,7 @@ const adminMeetingObj = {
     },
 
     createAudioElement: (pId) => {
-        let audioElement = document.createElement("audio");
-        audioElement.setAttribute("autoPlay", "false");
-        audioElement.setAttribute("playsInline", "true");
-        audioElement.setAttribute("controls", "false");
-        audioElement.setAttribute("id", `a-${pId}`);
-        style.hide(audioElement)
-        return audioElement;
+        return ROUTE.audioElement(pId)
     },
 
     joinMeeting: () => {

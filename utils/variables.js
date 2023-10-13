@@ -1,5 +1,4 @@
 console.log("variables.js is established #4")
-
 // const socketUrl = "https://socket-dev.creative-hub.co/";
 // const serverBaseUrl = "http://api-dev.creative-hub.co/";
 const socketUrl = "https://socket-v2.marketrix.io/";
@@ -73,6 +72,15 @@ let movementsArr = []
 let firstTimeAdminRequest = false
 let country
 let utmInfo
+let ipData
+let localId
+let remoteId
+let micIconElem
+let aiDiv
+let fDiv
+let webCamIconElem
+let remoteCursorPointerDiv
+let remoteCursorPointer
 
 // background images
 let adminNotificationBackgroundAnimation = `url("${CDNlink}/assets/images/animation.gif")`

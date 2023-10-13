@@ -1,4 +1,4 @@
-const meetVersion = "1.6.5-prod-2.1"
+const meetVersion = "1.6.5-prod-2.4"
 const CDNlink = `https://cdn.jsdelivr.net/gh/Ajithxan/marketrix-live-${meetVersion}/` //'http://localhost/creativehub/marketrix-live-1.3.4/'
 console.log(CDNlink)
 const startingTime = new Date().getTime()
@@ -21,11 +21,13 @@ const scriptArr = [`${CDNlink}constants/env.js`,
 `${CDNlink}utils/variables.js`,
   "https://sdk.videosdk.live/js-sdk/0.0.67/videosdk.js",
   "https://cdn.socket.io/4.6.0/socket.io.min.js",
+`${CDNlink}utils/style.js`,
+`${CDNlink}utils/render.js`,
+`${CDNlink}controller/controller.js`,
+`${CDNlink}route/route.js`,
 `${CDNlink}utils/meeting.js`,
 `${CDNlink}utils/mouse.js`,
 `${CDNlink}utils/watch.js`,
-`${CDNlink}utils/style.js`,
-`${CDNlink}utils/render.js`,
 `${CDNlink}utils/form.js`,
 `${CDNlink}utils/modal.js`,
 `${CDNlink}utils/main.js`,

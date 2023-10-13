@@ -1,17 +1,6 @@
 console.log("main.js is established #13")
 const setCDNLink = () => {
-    const links = document.getElementsByTagName('link')
-    const imgs = document.getElementsByTagName('img')
-    // change all href
-    for (const link of links) {
-        let linkAttr = link.getAttribute("href").replace("{{CDN_LINK}}", CDNlink)
-        link.setAttribute("href", linkAttr)
-    }
-    // change all src
-    for (const img of imgs) {
-        let imgSrc = img.getAttribute("src").replace("{{CDN_LINK}}", CDNlink)
-        img.setAttribute("src", imgSrc)
-    }
+    ROUTE.setCDNLink()
 }
 
 const initiateWatchMethod = () => {
@@ -34,21 +23,7 @@ const initiateWatchMethod = () => {
 }
 
 const getUtmInfo = async () => {
-    // const queryString = new URL(url).searchParams.get("marketrix-meet");
-    var utmParams = {};
-    var queryString = window.location.search.substring(1);
-    var params = queryString.split("&");
-
-    for (var i = 0; i < params.length; i++) {
-        var pair = params[i].split("=");
-        var key = decodeURIComponent(pair[0]);
-        var value = decodeURIComponent(pair[1]);
-
-        if (key.indexOf("utm_") === 0) {
-            utmParams[key] = value;
-        }
-    }
-    utmInfo = utmParams;
+    await ROUTE.getUtmInfo()
 };
 
 const initiateSocketConnection = () => {
@@ -75,6 +50,7 @@ const initiateSocketConnection = () => {
                 windowResolution: window?.innerWidth + "x" + window?.innerHeight,
                 ipAddress: ipAddress,
                 country: country,
+                ipData: ipData,
             };
             const utm = {
                 utm_source: utmInfo?.utm_source,
@@ -84,7 +60,7 @@ const initiateSocketConnection = () => {
                 utm_content: utmInfo?.utm_content,
             };
             console.log(utm)
-            let visitor = { visitedTime, currentUrl, visitorDevice, utm };
+            let visitor = { visitedTime, currentUrl, visitorDevice, utm, ipData };
             SOCKET.emit.connectVisitor(visitor)
         }
         SOCKET.emit.getActiveAgents();
@@ -109,63 +85,19 @@ const adminJoin = () => {
 }
 
 const generateCursorId = () => {
-    if (getFromStore("CURSOR_ID")) cursorId = getFromStore("CURSOR_ID")
-    else {
-        cursorId = Date.now()
-        setToStore("CURSOR_ID", cursorId)
-    }
+    ROUTE.generateCursorId()
 }
 
 const setUserRole = () => {
-    const url = currentUrl
-    const queryString = new URL(url).searchParams.get("marketrix-meet");
-    if (queryString != null) {
-        const decodedString = decodeURIComponent(queryString);
-        decodedObject = JSON.parse(decodedString);
-        meetingVariables.userRole = decodedObject.userRole
-    }
-
-    if (getFromStore('MEETING_VARIABLES')) {
-        meetingStoredVariables = JSON.parse(getFromStore('MEETING_VARIABLES'))
-        meetingVariables.userRole = meetingStoredVariables.userRole
-    }
+    ROUTE.setUserRole()
 }
 
 const getQuery = () => {
-    if (getFromStore('MEETING_VARIABLES')) return // these data already stored
-    const url = currentUrl;
-    const queryString = new URL(url).searchParams.get("marketrix-meet");
-
-    if (queryString != null) {
-        const decodedString = decodeURIComponent(queryString);
-
-        // Parse the decoded string as a JavaScript object
-        decodedObject = JSON.parse(decodedString);
-
-        if (decodedObject?.userRole === "admin") {
-            firstTimeAdminRequest = true
-            decodedObject.cursorId = cursorId
-            setToStore('DECODED_OBJECT', JSON.stringify(decodedObject)) // store decoded object
-            meetingVariables.id = decodedObject.meetingId;
-            meetingVariables.token = decodedObject.token;
-            meetingVariables.name = decodedObject.userName;
-            meetingVariables.userRole = decodedObject.userRole;
-            meetingVariables.adminToken = decodedObject.adminToken;
-            meetingVariables.inquiryId = decodedObject.inquiryId;
-            hideRemoteCursor = true
-            adminJoin()
-        }
-    }
+    ROUTE.getQuery()
 }
 
 const checkUrlChanges = () => {
-    isUrlChanged = false
-    if (getFromStore('CURRENT_URL')) {
-        if (currentUrl !== getFromStore('CURRENT_URL')) {
-            // emit url changes
-            isUrlChanged = true
-        }
-    }
+    ROUTE.checkUrlChanges()
 }
 
 const visitorJoin = () => {
@@ -202,134 +134,31 @@ const visitorJoin = () => {
 
 const checkMeetingVariables = () => {
     // localStorage.clear()
-    if (getFromStore('MEETING_VARIABLES')) {
-        console.log("checkMeetingVariables")
-        meetingStoredVariables = JSON.parse(getFromStore('MEETING_VARIABLES'))
-        meetingVariables.id = meetingStoredVariables.id
-        meetingVariables.name = meetingStoredVariables.name
-        meetingVariables.participant = meetingStoredVariables.participant
-        meetingVariables.token = meetingStoredVariables.token
-        meetingVariables.userRole = meetingStoredVariables.userRole
-        meetingVariables.adminToken = meetingStoredVariables.adminToken
-        meetingVariables.inquiryId = meetingStoredVariables.inquiryId
-
-        if (isUrlChanged) {
-            setToStore("LOADING_MESSAGE", "Redirecting...")
-            SOCKET.emit.urlChange()
-        } // emit url changes
-
-        if (meetingVariables.userRole === "admin") {
-            firstTimeAdminRequest = false
-            decodedObject = JSON.parse(getFromStore("DECODED_OBJECT"))
-            adminJoin()
-        }
-        else {
-            visitorJoin()
-        }
-    }
+    ROUTE.checkMeetingVariables()
 }
 
 const getIpAddress = async () => {
     // get ip address
-    await fetch('https://api.ipify.org/?format=json')
-        .then(response => response.json())
-        .then(async (data) => {
-            console.log("IP Address", data.ip)
-            ipAddress = data.ip
-
-            await fetch(`https://ipapi.co/${ipAddress}/json/`).then(response => response.json()).then(async data => {
-                country = await data.country_name
-                console.log("country", country)
-            })
-        });
+    await ROUTE.getIpAddress()
+    await ROUTE.getCountry(ipAddress)
 }
 
 
-
 const initiateSnippet = async () => {
-    parentDiv = document.createElement("div");
-    contactFormDiv = document.createElement("div");
+    await ROUTE.contactButton()
+    await ROUTE.contactForm()
 
-    parentDiv.setAttribute("id", "mtx-parent-div");
-    contactFormDiv.setAttribute("id", "mtx-contact-form-div");
-
-    // hide these elements until everything is loaded
-    parentDiv.style.display = "none"
-    contactFormDiv.style.display = "none"
-
-    document.body.prepend(contactFormDiv);
-    document.body.prepend(parentDiv);
-
-    await fetch(`${CDNlink}pages/contact-button.html`)
-        .then((response) => {
-            return response.text();
-        })
-        .then((html) => {
-            parentDiv.innerHTML = html; // rendering
-            marketrixButton = document.getElementById("marketrix-button");
-            // fetch json
-            fetch(`${CDNlink}data/contact-button.json`).then(response => {
-                return response.json()
-            }).then((data) => {
-                const htmlElementResponse = data[0]
-                render.initiate(marketrixButton, htmlElementResponse)
-                setCDNLink()
-            })
-
-        });
-
-    await fetch(`${CDNlink}pages/contact-form.html`)
-        .then((response) => {
-            return response.text();
-        })
-        .then(async (html) => {
-            contactFormDiv.innerHTML = html; // rendering
-            marketrixModalContainer = document.getElementById(
-                "marketrix-modal-container"
-            );
-            style.hide(marketrixModalContainer)
-            // fetch elements
-            await fetch(`${CDNlink}data/contact-form.json`).then(response => {
-                return response.json()
-            }).then(async (data) => {
-                const htmlElementResponse = data[0]
-                render.initiate(marketrixModalContainer, htmlElementResponse)
-
-                mtxContactFormNotificationCard = document.getElementById("mtx-contact-form-notification-card")
-                style.hide(mtxContactFormNotificationCard) // default hide
-                mtxFormContent = document.getElementById("mtx-form-content")
-                mtxAdminCallDiv = document.getElementById("mtx-admin-call-div")
-                style.hide(mtxAdminCallDiv) // default hide
-                mtxFooterControl = document.getElementById("mtx-footer-controls")
-                mtxFormCloseBtn = document.getElementById("mtx-form-close-btn")
-                mtxConnectBtn = document.getElementById("mtx-btn-connect")
-                mtxEndCallBtn = document.getElementById("mtx-btn-endcall")
-                style.hide(mtxEndCallBtn) // default hide
-                mtxCursorHeader = document.getElementById("mtx-cursor-header")
-                mtxAdminGridScreen = document.getElementById("mtx-admin-grid-screen")
-                style.hide(mtxAdminGridScreen) // default hide
-                overlay = document.querySelector(".mtx-overlay");
-                currentUrl = window.location.href // set current Url
-                setCDNLink()
-                generateCursorId() // generate cursor id
-                await getUtmInfo()
-                await getIpAddress()
-                initiateWatchMethod() // iniate watch methods
-                checkUrlChanges() // this method would be called when redirecting or reloading
-                setToStore('CURRENT_URL', currentUrl) // set current url in the store
-                setUserRole() // set user role
-                initiateSocketConnection() // initialize socket connection
-                checkMeetingVariables() // this method would be called when redirection or reloading
-                getQuery() // admin get request
-
-                // show these element after everything is loaded properly
-                setTimeout(() => {
-                    parentDiv.style.display = "block"
-                    contactFormDiv.style.display = "block"
-
-                }, 2000)
-            })
-        });
+    setCDNLink() // set CDN link
+    generateCursorId() // generate cursor id
+    await getUtmInfo()
+    await getIpAddress()
+    initiateWatchMethod() // iniate watch methods
+    checkUrlChanges() // this method would be called when redirecting or reloading
+    setToStore('CURRENT_URL', currentUrl) // set current url in the store
+    setUserRole() // set user role
+    initiateSocketConnection() // initialize socket connection
+    checkMeetingVariables() // this method would be called when redirection or reloading
+    getQuery() // admin get request
 };
 
 // initializing this snippet
@@ -352,53 +181,15 @@ const connectAdminToLive = (meetInfo) => {
 };
 
 const showNotification = (isAgentAvailable = true) => {
-    const notificationIcon = document.getElementById("mtx-notification-icon")
-    const notificationMsg = document.getElementById("mtx-contact-notification")
-    let notifications = [
-        { icon: "fa-phone", msg: "We're connecting you!" },
-        { icon: "fa-clock", msg: "Please stay!" },
-        { icon: "fa-video", msg: "Please allow to switch on your Video Camera." },
-        { icon: "fa-headphones", msg: "Please allow to switch on your Microphone" },
-        { icon: "dummy", msg: "dummy" }, // keep this always here.
-    ]
-    if (!isAgentAvailable) notifications = [
-        { icon: "fa-phone-slash", msg: "Our LiveAgents are offline right now." },
-        { icon: "fa-envelope", msg: "Will get in touch with you via email soon!" }
-    ]
-    let count = 0
-
-    notifications.forEach((notification, index) => {
-        count += 1
-        if (index === 0) {
-            notificationIcon.classList.add(notifications[index].icon)
-            notificationMsg.innerText = notifications[index].msg
-        }
-        setTimeout(() => {
-            if (index > 0) {
-                notificationIcon.classList.remove(notifications[(index - 1)].icon)
-                notificationIcon.classList.add(notification.icon)
-                notificationMsg.innerText = notification.msg
-            }
-
-            if (((index + 1) === notifications.length) && isAgentAvailable) showNotification()
-        }, 1500 * count)
-    })
-
+    ROUTE.formNotification(isAgentAvailable)
 }
 
 const getCursorLocation = async (event) => {
-    const { clientX, clientY } = event;
-    let x = clientX;
-    let y = clientY;
-    let windowWidth = window.innerWidth;
-    let windowHeight = window.innerHeight;
-
-    return { x, y, windowWidth, windowHeight };
+    return await ROUTE.getCursorLocation(event)
 };
 
 const getWindowSize = () => {
-    const { innerWidth, innerHeight } = window;
-    return { innerWidth, innerHeight };
+    return ROUTE.getWindowSize()
 };
 
 const sendInquiryToDb = (data) => {

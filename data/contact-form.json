@@ -200,7 +200,8 @@
                                         }
                                     ]
                                 }
-                            }, {
+                            },
+                            {
                                 "element": "div",
                                 "id": "mtx-footer-controls",
                                 "class": ["mtx-main-footer"],
