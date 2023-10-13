@@ -210,7 +210,7 @@ const meetingObj = {
             aiDiv = document.getElementById(`ai-${localId}`);
 
             if (meetingObj.isMicOn) ROUTE.micOff()
-            else ROUTE.micOne()
+            else ROUTE.micOn()
             meetingObj.isMicOn = !meetingObj.isMicOn;
         },
 
